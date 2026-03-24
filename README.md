@@ -437,8 +437,6 @@ python -m streamlit run app/app.py
 [![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/vasudha0615)
 [![Email](https://img.shields.io/badge/Email-Contact-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:tullavasudha@gmail.com)
 
-*Open to AI/ML Engineering · Data Science · NLP · Full Stack AI opportunities*
-
 </div>
 
 <br/>
