@@ -116,11 +116,14 @@ This platform **automatically solves that problem** by:
 ```
 AI-Based-Knowledge-Graph-Builder/
 │
-├── 📓 data_ingestion.ipynb          # Milestone 1: Data cleaning & preprocessing
-├── 📓 llm.ipynb                     # Milestone 2: LLM entity extraction & graph
+├── 📓 data_ingestion.ipynb          # Milestone 1: Data cleaning & enrichment
+├── 📓 llm.ipynb                     # Milestone 2: LLM NER & Neo4j graph
 │
-├── 📊 tickets.xlsx                  # Raw enterprise ticket data (8,469 records)
+├── 📊 tickets.xlsx                  # Raw enterprise data (8,469 records)
 ├── 📊 cleaned_tickets.xlsx          # Processed dataset (21 columns)
+├── 📊 structured_triples.csv        # Rule-based triples from ticket columns
+├── 📊 llm_triples.csv               # Semantic triples from Mistral LLM
+├── 📊 final_triples.csv             # Merged complete knowledge graph dataset
 │
 ├── 📁 semantic_rag/                 # Milestone 3: RAG Pipeline
 │   ├── 🐍 documents.py             # Knowledge base documents
@@ -129,8 +132,8 @@ AI-Based-Knowledge-Graph-Builder/
 │   ├── 🐍 rag_pipeline.py          # Complete RAG Q&A pipeline
 │   └── 🐍 main.py                  # Pipeline entry point
 │
-└── 📁 app/                          # Milestone 4: Web Dashboard
-    └── 🐍 app.py                   # Streamlit web application
+└── 📁 app/                          # Milestone 4: Dashboard & API
+    └── 🐍 app.py                   # Streamlit dashboard + Flask API
 ```
 
 <br/>
@@ -162,24 +165,66 @@ df['Severity']   = df['Ticket Priority'].replace({
 ### ✅ Milestone 2 — Entity Extraction & Graph Building
 > *Weeks 3-4 · Extract entities/relationships and construct graph*
 
-- Used **Mistral 7B LLM** locally via Ollama for Named Entity Recognition
-- Extracted structured **triplets**: `(Subject → Predicate → Object)`
-- Built a **directed knowledge graph** using NetworkX
-- Identified entity types: Products, Issues, Causes, Resolutions
+## Step 1: Structured Triple Extraction (Rules Engine)
 
-```python
-# LLM prompt for entity extraction
-prompt = f"""
-Extract entities and relationships from:
-{ticket_description}
+Extracted **entity–relationship–entity triples** directly from structured ticket columns.
 
-Return format:
-Entities: [...]
-Relationships: [entity1 -> relation -> entity2, ...]
-"""
-response = ollama.chat(model="mistral", messages=[{"role":"user","content":prompt}])
+*Example triples:*
+
+```
+(LG Smart TV,  HAS_ISSUE,     Product Setup)
+(Ticket_1,     HAS_PRIORITY,  Critical)
+(Ticket_1,     SUBMITTED_VIA, Email)
+(Ticket_1,     HAS_STATUS,    Open)
+(Ticket_1,     IS_TYPE,       Technical Issue)
+(LG Smart TV,  RAISED,        Ticket_1)
 ```
 
+**Output:** `structured_triples.csv`
+
+## Step 2: LLM-Based NER (Mistral 7B)
+
+Used **Mistral LLM** locally via Ollama to extract semantic triples from unstructured ticket descriptions.
+
+*Example triples:*
+
+```
+(Dell XPS,       EXPERIENCING,    Not turning on)
+(Dell XPS,       REQUIRED_ACTION, Troubleshoot power issues)
+(LG Smart TV,    EXPERIENCING,    Intermittent issues)
+(Nintendo Switch,EXPERIENCING,    Not charging properly)
+```
+
+**Output:** `llm_triples.csv`
+
+## Step 3: Merge All Triples
+
+Combined structured and LLM-generated triples into one unified dataset.
+
+**Output:** `final_triples.csv`
+
+## Step 4: Graph Construction
+
+Built knowledge graph using **NetworkX** (in-memory) and pushed all triples to **Neo4j Desktop** using MERGE queries.
+
+### Graph Statistics
+
+```
+Graph Statistics
+─────────────────────────────────────
+Structured Triples   : 50,814+
+LLM Triples          : 40+
+Total Final Triples  : 50,854+
+Unique Nodes         : 8,500+
+Unique Relationships : 6 types
+
+Note: Running LLM on full 8,469 tickets generates
+a significantly larger, interconnected knowledge graph.
+```
+
+## Step 5: Graph Validation
+
+Validated graph integrity using Cypher queries in Neo4j Browser:
 ---
 
 ### ✅ Milestone 3 — Semantic Search & RAG Pipeline
