@@ -447,6 +447,4 @@ python -m streamlit run app/app.py
 
 **⭐ Star this repository if you found it useful!**
 
-*Built with ❤️ during internship · AI Knowledge Graph Builder · Enterprise Intelligence*
-
 </div>
