@@ -1,0 +1,22 @@
+services:
+  # Streamlit Dashboard
+  - type: web
+    name: kgb-dashboard
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m streamlit run app/app.py --server.port $PORT --server.address 0.0.0.0
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+
+  # Flask API
+  - type: web
+    name: kgb-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app.flask_api:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: MONGO_URI
+        sync: false
